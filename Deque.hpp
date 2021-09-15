@@ -14,7 +14,16 @@
 #include <string.h>
 
 #define Deque_DEFINE(t) \
-    struct Deque_##t##_Iterator; \
+    struct Deque_##t; \
+    /* new struct */ \
+    struct Deque_##t##_Iterator { \
+        int index; \
+        Deque_##t* deq; \
+        /* functions below*/ \
+        t &(*deref)(Deque_##t##_Iterator *); \
+        void &(*inc)(Deque_##t##_Iterator *); \
+\
+    }; \
     /* new struct */\
     struct Deque_##t { \
         int head;\
@@ -33,8 +42,8 @@
         void (*pop_back)(Deque_##t *); \
         int (*size)(Deque_##t *); \
         bool (*empty)(Deque_##t *); \
-        int (*begin)(Deque_##t *); /* Not Finished */ \
-        int (*end)(Deque_##t *); /* Not Finished */ \
+        Deque_##t##_Iterator (*begin)(Deque_##t *); \
+        Deque_##t##_Iterator (*end)(Deque_##t *); \
         t &(*at)(Deque_##t *, int index); \
         void (*clear)(Deque_##t *); \
         void (*dtor)(Deque_##t *); \
@@ -99,7 +108,17 @@
         }\
     }\
 \
-/* I don't know how to write begin and end so far */\
+    Deque_##t##_Iterator (*begin)(Deque_##t* deq) { \
+        Deque_##t##_Iterator it; \
+        it->index = deq->head; \
+        it->deq = deq; \
+    } /* not finished */\
+\
+    Deque_##t##_Iterator (*end)(Deque_##t* deq) { \
+        Deque_##t##_Iterator it; \
+        it->index = deq->tail; \
+        it->deq = deq; \
+    } /* not finished */\
 \
     t &Deque_##t##_at (Deque_##t* deq, int index) { \
         if (index < 0 && index >= deq->deq_size) { \
