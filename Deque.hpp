@@ -15,7 +15,7 @@
 
 #define Deque_DEFINE(t) \
     struct Deque_##t##_Iterator; \
-    /* struct */\
+    /* new struct */\
     struct Deque_##t { \
         int head;\
         int tail;\
@@ -121,5 +121,26 @@
         deq = nullptr; \
     } \
 \
+    /* outside functions */\
+    void Deque_##t##_ctor (Deque_##t* deq, bool (*less)(const t &, const t &)) { \
+        deq->head = 0; \
+        deq->tail = 0; \
+        deq->deq_size = 0; \
+        deq->arr = (t*)malloc(100 * sizeof(t)); \
+        deq->type_name = "Deque_"#t; \
+        deq->front = &Deque_##t##_front; \
+        deq->back = &Deque_##t##_back; \
+        deq->push_front = &Deque_##t##_push_front; \
+        deq->push_back = &Deque_##t##_push_back; \
+        deq->pop_front = &Deque_##t##_pop_front; \
+        deq->pop_back = &Deque_##t##_pop_back; \
+        deq->size = &Deque_##t##_size; \
+        deq->empty = &Deque_##t##_empty; \
+        deq->at = &Deque_##t##_at; \
+        deq->clear = &Deque_##t##_clear; \
+        deq->dtor = &Deque_##t##_dtor; \
+    } \
+\
+
 
 #endif
