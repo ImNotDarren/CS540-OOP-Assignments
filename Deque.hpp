@@ -22,8 +22,16 @@
         /* functions below*/ \
         t &(*deref)(Deque_##t##_Iterator *); \
         void &(*inc)(Deque_##t##_Iterator *); \
-\
+        void &(*dec)(Deque_##t##_Iterator *); \
+        bool (*equal)(const Deque_##t##_Iterator &, const Deque_##t##_Iterator &);  \
     }; \
+    /* function implement */ \
+    bool Deque_##t##_Iterator_equal(const Deque_##t##_Iterator it1, const Deque_##t##_Iterator it2) { \
+        if (it1.index == it2.index) { \
+            return true; \
+        } \
+        return false; \
+    } \
     /* new struct */\
     struct Deque_##t { \
         int head;\
@@ -47,6 +55,7 @@
         t &(*at)(Deque_##t *, int index); \
         void (*clear)(Deque_##t *); \
         void (*dtor)(Deque_##t *); \
+        bool (*equal)(Deque_##t &, Deque_##t &); \
     }; \
 \
 \
@@ -97,7 +106,7 @@
     } \
 \
     int Deque_##t##_size (Deque_##t* deq) { \
-        return deq->deq_size\
+        return deq->deq_size; \
     } \
 \
     bool Deque_##t##_empty (Deque_##t* deq){ \
@@ -108,24 +117,27 @@
         }\
     }\
 \
-    Deque_##t##_Iterator (*begin)(Deque_##t* deq) { \
+    Deque_##t##_Iterator Deque_##t##_begin (Deque_##t* deq) { \
         Deque_##t##_Iterator it; \
-        it->index = deq->head; \
-        it->deq = deq; \
+        it.index = deq->head; \
+        it.deq = deq; \
+        return it; \
     } /* not finished */\
 \
-    Deque_##t##_Iterator (*end)(Deque_##t* deq) { \
+    Deque_##t##_Iterator Deque_##t##_end (Deque_##t* deq) { \
         Deque_##t##_Iterator it; \
-        it->index = deq->tail; \
-        it->deq = deq; \
+        it.index = deq->tail; \
+        it.deq = deq; \
+        return it; \
     } /* not finished */\
 \
     t &Deque_##t##_at (Deque_##t* deq, int index) { \
         if (index < 0 && index >= deq->deq_size) { \
-            printf("At: Bad index!\n");\
-            return null; \
+            printf("At: Bad index!\n"); \
+            t q; \
+            return q; \
         } else { \
-            return deq->arr[deq->head + i];\
+            return deq->arr[deq->head + index];\
         } \
     } \
 \
@@ -139,6 +151,11 @@
         free(deq->arr); \
         deq = nullptr; \
     } \
+    bool Deque_##t##_equal (Deque_##t deq1, Deque_##t deq2) { \
+        if (deq1.deq_size != deq2.deq_size) { \
+            return false; \
+        } \
+    }\
 \
     /* outside functions */\
     void Deque_##t##_ctor (Deque_##t* deq, bool (*less)(const t &, const t &)) { \
@@ -146,7 +163,7 @@
         deq->tail = 0; \
         deq->deq_size = 0; \
         deq->arr = (t*)malloc(100 * sizeof(t)); \
-        deq->type_name = "Deque_"#t; \
+        strcpy(deq->type_name, "Deque_"#t); \
         deq->front = &Deque_##t##_front; \
         deq->back = &Deque_##t##_back; \
         deq->push_front = &Deque_##t##_push_front; \
@@ -158,6 +175,8 @@
         deq->at = &Deque_##t##_at; \
         deq->clear = &Deque_##t##_clear; \
         deq->dtor = &Deque_##t##_dtor; \
+        deq->begin = &Deque_##t##_begin; \
+        deq->end = &Deque_##t##_end; \
     } \
 \
 
