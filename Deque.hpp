@@ -33,8 +33,8 @@
         void (*pop_back)(Deque_##t *); \
         int (*size)(Deque_##t *); \
         bool (*empty)(Deque_##t *); \
-        int (*begin)(Deque_##t *); /* type TBD */ \
-        int (*end)(Deque_##t *); /* type TBD */ \
+        int (*begin)(Deque_##t *); /* Not Finished */ \
+        int (*end)(Deque_##t *); /* Not Finished */ \
         t &(*at)(Deque_##t *, int index); \
         void (*clear)(Deque_##t *); \
         void (*dtor)(Deque_##t *); \
@@ -43,11 +43,11 @@
 \
     /* function implement */ \
 \
-    t Deque_##t##_front (Deque_##t* deq) { \
+    t &Deque_##t##_front (Deque_##t* deq) { \
         return deq->arr[deq->head]; \
     } \
 \
-    t Deque_##t##_back (Deque_##t* deq) { \
+    t &Deque_##t##_back (Deque_##t* deq) { \
         return deq->arr[deq->tail]; \
     } \
 \
@@ -90,5 +90,36 @@
     int Deque_##t##_size (Deque_##t* deq) { \
         return deq->deq_size\
     } \
+\
+    bool Deque_##t##_empty (Deque_##t* deq){ \
+        if (deq->deq_size == 0){ \
+            return true; \
+        } else { \
+            return false; \
+        }\
+    }\
+\
+/* I don't know how to write begin and end so far */\
+\
+    t &Deque_##t##_at (Deque_##t* deq, int index) { \
+        if (index < 0 && index >= deq->deq_size) { \
+            printf("At: Bad index!\n");\
+            return null; \
+        } else { \
+            return deq->arr[deq->head + i];\
+        } \
+    } \
+\
+    void Deque_##t##_clear (Deque_##t* deq) { \
+        deq->head = 0; \
+        deq->tail = 0; \
+        deq->deq_size = 0; \
+    } \
+\
+    void Deque_##t##_dtor (Deque_##t* deq) { \
+        free(deq->arr); \
+        deq = nullptr; \
+    } \
+\
 
 #endif
