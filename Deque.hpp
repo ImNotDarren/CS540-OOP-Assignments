@@ -144,7 +144,7 @@
 \
     Deque_##t##_Iterator Deque_##t##_end (Deque_##t* deq) { \
         Deque_##t##_Iterator it; \
-        it.index = deq->tail; \
+        it.index = deq->tail + 1; \
         it.deq = deq; \
         it.deref = &Deque_##t##_Iterator_deref; \
         it.inc = &Deque_##t##_Iterator_inc; \
