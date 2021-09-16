@@ -21,8 +21,8 @@
         Deque_##t* deq; \
         /* functions below*/ \
         t &(*deref)(Deque_##t##_Iterator *); \
-        void &(*inc)(Deque_##t##_Iterator *); \
-        void &(*dec)(Deque_##t##_Iterator *); \
+        void (*inc)(Deque_##t##_Iterator *); \
+        void (*dec)(Deque_##t##_Iterator *); \
         bool (*equal)(const Deque_##t##_Iterator &, const Deque_##t##_Iterator &);  \
     }; \
     /* function implement */ \
@@ -57,7 +57,7 @@
         void (*dtor)(Deque_##t *); \
         bool (*equal)(Deque_##t &, Deque_##t &); \
         void (*sort)(Deque_##t *, Deque_##t##_Iterator, Deque_##t##_Iterator); \
-        bool (*compare)(t &, t &); \
+        bool (*compare)(const t &, const t &); \
     }; \
 \
 \
@@ -153,11 +153,19 @@
         free(deq->arr); \
         deq = nullptr; \
     } \
+\
     bool Deque_##t##_equal (Deque_##t deq1, Deque_##t deq2) { \
         if (deq1.deq_size != deq2.deq_size) { \
             return false; \
         } \
+        for (int i=0; i<deq1.deq_size; i++) { \
+            if (deq1.compare(deq1.at(&deq1, i), deq2.at(&deq2, i)) || deq1.compare(deq2.at(&deq2,i), deq1.at(&deq1,i))) {\
+                return false; \
+            } \
+        } \
+        return true; \
     }\
+\
     void Deque_##t##_sort (Deque_##t* deq, Deque_##t##_Iterator it1, Deque_##t##_Iterator it2) { \
         std::sort(&deq->arr[it1.index], &deq->arr[it2.index], deq->compare); \
     }\
