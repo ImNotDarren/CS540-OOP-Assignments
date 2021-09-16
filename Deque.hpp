@@ -52,10 +52,12 @@
         bool (*empty)(Deque_##t *); \
         Deque_##t##_Iterator (*begin)(Deque_##t *); \
         Deque_##t##_Iterator (*end)(Deque_##t *); \
-        t &(*at)(Deque_##t *, int index); \
+        t &(*at)(Deque_##t *, int); \
         void (*clear)(Deque_##t *); \
         void (*dtor)(Deque_##t *); \
         bool (*equal)(Deque_##t &, Deque_##t &); \
+        void (*sort)(Deque_##t *, Deque_##t##_Iterator, Deque_##t##_Iterator); \
+        bool (*compare)(t &, t &); \
     }; \
 \
 \
@@ -156,6 +158,9 @@
             return false; \
         } \
     }\
+    void Deque_##t##_sort (Deque_##t* deq, Deque_##t##_Iterator it1, Deque_##t##_Iterator it2) { \
+        std::sort(&deq->arr[it1.index], &deq->arr[it2.index], deq->compare); \
+    }\
 \
     /* outside functions */\
     void Deque_##t##_ctor (Deque_##t* deq, bool (*less)(const t &, const t &)) { \
@@ -177,8 +182,8 @@
         deq->dtor = &Deque_##t##_dtor; \
         deq->begin = &Deque_##t##_begin; \
         deq->end = &Deque_##t##_end; \
+        deq->compare = less; \
     } \
-\
 
 
 #endif
