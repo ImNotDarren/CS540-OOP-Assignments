@@ -10,11 +10,36 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-#include <string.h>
 
 #define Deque_DEFINE(t) \
-    struct Deque_##t; \
+    struct Deque_##t##_Iterator; \
+    /* new struct */\
+    struct Deque_##t { \
+        size_t head;\
+        size_t tail;\
+        size_t deq_size; \
+        t* arr; \
+        char type_name[sizeof("Deque_"#t)] = "Deque_"#t;\
+\
+        /* functions below */ \
+\
+        t &(*front)(Deque_##t *); \
+        t &(*back)(Deque_##t *); \
+        void (*push_front)(Deque_##t *, t info); \
+        void (*push_back)(Deque_##t *, t info); \
+        void (*pop_front)(Deque_##t *); \
+        void (*pop_back)(Deque_##t *); \
+        size_t (*size)(Deque_##t *); \
+        bool (*empty)(Deque_##t *); \
+        Deque_##t##_Iterator (*begin)(Deque_##t *); \
+        Deque_##t##_Iterator (*end)(Deque_##t *); \
+        t &(*at)(Deque_##t *, size_t); \
+        void (*clear)(Deque_##t *); \
+        void (*dtor)(Deque_##t *); \
+        bool (*equal)(Deque_##t &, Deque_##t &); \
+        void (*sort)(Deque_##t *, Deque_##t##_Iterator, Deque_##t##_Iterator); \
+        bool (*compare)(const t &, const t &); \
+    }; \
     /* new struct */ \
     struct Deque_##t##_Iterator { \
         int index; \
@@ -25,43 +50,28 @@
         void (*dec)(Deque_##t##_Iterator *); \
         bool (*equal)(const Deque_##t##_Iterator &, const Deque_##t##_Iterator &);  \
     }; \
-    /* function implement */ \
+\
+    /* iterator function implement */ \
     bool Deque_##t##_Iterator_equal(const Deque_##t##_Iterator it1, const Deque_##t##_Iterator it2) { \
         if (it1.index == it2.index) { \
             return true; \
         } \
         return false; \
     } \
-    /* new struct */\
-    struct Deque_##t { \
-        int head;\
-        int tail;\
-        int deq_size; \
-        t* arr; \
-        char type_name[6 + sizeof(t)] = "Deque_"#t;\
-        \
-        /* functions below */ \
-        \
-        t &(*front)(Deque_##t *); \
-        t &(*back)(Deque_##t *); \
-        void (*push_front)(Deque_##t *, t info); \
-        void (*push_back)(Deque_##t *, t info); \
-        void (*pop_front)(Deque_##t *); \
-        void (*pop_back)(Deque_##t *); \
-        int (*size)(Deque_##t *); \
-        bool (*empty)(Deque_##t *); \
-        Deque_##t##_Iterator (*begin)(Deque_##t *); \
-        Deque_##t##_Iterator (*end)(Deque_##t *); \
-        t &(*at)(Deque_##t *, int); \
-        void (*clear)(Deque_##t *); \
-        void (*dtor)(Deque_##t *); \
-        bool (*equal)(Deque_##t &, Deque_##t &); \
-        void (*sort)(Deque_##t *, Deque_##t##_Iterator, Deque_##t##_Iterator); \
-        bool (*compare)(const t &, const t &); \
-    }; \
 \
+    t &Deque_##t##_Iterator_deref (Deque_##t##_Iterator* it) { \
+        return it->deq->arr[it->index]; \
+    }\
 \
-    /* function implement */ \
+    void Deque_##t##_Iterator_inc (Deque_##t##_Iterator* it) { \
+        it->index ++; \
+    }\
+\
+    void Deque_##t##_Iterator_dec (Deque_##t##_Iterator* it) { \
+        it->index --; \
+    }\
+\
+    /* deque function implement */ \
 \
     t &Deque_##t##_front (Deque_##t* deq) { \
         return deq->arr[deq->head]; \
@@ -72,12 +82,18 @@
     } \
 \
     void Deque_##t##_push_front (Deque_##t* deq, t info) { \
-        deq->tail ++; \
-        for (int i=deq->tail; i>deq->head; i--) { \
-            deq->arr[i] = deq->arr[i-1]; \
+        if (deq->deq_size == 0) {\
+            deq->tail ++; \
+            deq->arr[deq->tail] = info; \
+            deq->deq_size ++; \
+        } else { \
+            deq->tail ++; \
+            for (int i=deq->tail; i>deq->head; i--) { \
+                deq->arr[i] = deq->arr[i-1]; \
+            } \
+            deq->arr[deq->head] = info; \
+            deq->deq_size ++; \
         } \
-        deq->arr[deq->head] = info; \
-        deq->deq_size ++; \
     } \
 \
     void Deque_##t##_push_back (Deque_##t* deq, t info) { \
@@ -88,10 +104,7 @@
 \
     void Deque_##t##_pop_front (Deque_##t* deq) { \
         if (deq->deq_size > 0) { \
-            for (int i=deq->head; i<deq->tail; i++) { \
-                deq->arr[i] = deq->arr[i+1]; \
-            } \
-            deq->tail --; \
+            deq->head ++; \
             deq->deq_size --; \
         } else { \
             printf("Pop Front: Nothing to pop!\n"); \
@@ -107,7 +120,7 @@
         } \
     } \
 \
-    int Deque_##t##_size (Deque_##t* deq) { \
+    size_t Deque_##t##_size (Deque_##t* deq) { \
         return deq->deq_size; \
     } \
 \
@@ -123,17 +136,23 @@
         Deque_##t##_Iterator it; \
         it.index = deq->head; \
         it.deq = deq; \
+        it.deref = &Deque_##t##_Iterator_deref; \
+        it.inc = &Deque_##t##_Iterator_inc; \
+        it.dec = &Deque_##t##_Iterator_dec; \
         return it; \
-    } /* not finished */\
+    } \
 \
     Deque_##t##_Iterator Deque_##t##_end (Deque_##t* deq) { \
         Deque_##t##_Iterator it; \
         it.index = deq->tail; \
         it.deq = deq; \
+        it.deref = &Deque_##t##_Iterator_deref; \
+        it.inc = &Deque_##t##_Iterator_inc; \
+        it.dec = &Deque_##t##_Iterator_dec; \
         return it; \
-    } /* not finished */\
+    } \
 \
-    t &Deque_##t##_at (Deque_##t* deq, int index) { \
+    t &Deque_##t##_at (Deque_##t* deq, size_t index) { \
         if (index < 0 && index >= deq->deq_size) { \
             printf("At: Bad index!\n"); \
             t q; \
@@ -173,7 +192,7 @@
     /* outside functions */\
     void Deque_##t##_ctor (Deque_##t* deq, bool (*less)(const t &, const t &)) { \
         deq->head = 0; \
-        deq->tail = 0; \
+        deq->tail = -1; \
         deq->deq_size = 0; \
         deq->arr = (t*)malloc(100 * sizeof(t)); \
         strcpy(deq->type_name, "Deque_"#t); \
